@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ami a szerencsejáték mögött rejlik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="hero">
+ 
+  <div class="wrap">
+    <h1>Ami a szerencsejáték mögött rejlik</h1>
+    <p class="lede">Ez az oldal nem szerencsejáték-oldal. Megmutatja, hogyan épül fel a matematika és a pszichológia a nyerőgépek, a rulett, a blackjack, a fogadóirodák és a lottó mögött — és kockázatmentes szimulátorokkal azt is átélheted, milyen érzés valójában, amikor a szabályokat eleve nem a te javadra találták ki.</p>
+    <div class="bignum-row">
+      <div class="bignum">
+        <div class="n">−10%</div>
+        <div class="cap">Ennyit veszít átlagosan minden elköltött zseton egy tipikus nyerőgépen. Nem pech — tervezés.</div>
+      </div>
+    </div>
+    <a href="#szimulator" class="cta">Kezdd a szimulátorral</a>
+    <a href="#rulett" class="cta">Rulett</a>
+    <a href="#blackjack" class="cta">Blackjack</a>
+  </div>
+</header>
+
+<!-- ============ 1. NYERŐGÉP ============ -->
+<section class="demo" id="szimulator">
+  <div class="wrap">
+    <h2>Próbáld ki — fiktív zsetonokkal</h2>
+    <div class="disclaimer">
+      Amit itt látsz, egy modell: kitalált zsetonokkal működik, valós pénz nincs a képben, és nem is lehet nyerni vagy veszíteni semmi valódit. A cél nem a szórakoztatás, hanem hogy megérezd, milyen egy olyan játék, amelynek szabályait eleve a szervező javára találták ki.
+    </div>
+
+    <div class="odds-table mono" aria-label="A szimulátor esélyei pörgetésenként">
+      <div class="odds-row"><span>Nincs nyeremény</span><span>10-ből kb. 6</span></div>
+      <div class="odds-row"><span>Kis nyeremény (2×)</span><span>10-ből kb. 4</span></div>
+      <div class="odds-row"><span>Közepes nyeremény (8×)</span><span>100-ból 1</span></div>
+      <div class="odds-row"><span>Fő nyeremény (100×)</span><span>1000-ből 1</span></div>
+      <div class="odds-row total"><span>Visszajön minden 100 zsetonból</span><span>átlag 90</span></div>
+    </div>
+
+    <div class="machine">
+      <div class="cabinet">
+        <div class="reels" id="reels">
+          <div class="reel" id="reel0">🍒</div>
+          <div class="reel" id="reel1">🔔</div>
+          <div class="reel" id="reel2">⭐</div>
+        </div>
+        <button class="spin-btn" id="spinBtn">Pörgetés — 1 zseton</button>
+        <div class="msg" id="msg">20 zsetonnal indulsz.</div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Egyenleg</div><div class="val mono" id="statBalance">20</div></div>
+          <div class="stat"><div class="label">Pörgetések</div><div class="val mono" id="statSpins">0</div></div>
+          <div class="stat"><div class="label">Elköltve összesen</div><div class="val mono" id="statStaked">0</div></div>
+          <div class="stat"><div class="label">Visszakapva összesen</div><div class="val mono" id="statWon">0</div></div>
+        </div>
+        <button class="reset-link" id="resetBtn">Zsetonok újratöltése</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. RULETT ============ -->
+<section class="demo" id="rulett">
+  <div class="wrap">
+    <h2>Rulett — fiktív zsetonokkal</h2>
+    <div class="explain">
+      <p>Az európai rulettkeréken 37 mező van: az 1–36 számok és egy zöld 0. Ha pirosra teszel, 18 mező nyer, 19 viszont veszít — a nulla miatt. A kifizetés viszont úgy van megszabva, mintha csak 36 mező lenne.</p>
+      <p>Ez a kis különbség az egész ház-előny: 1 / 37 = <b>2,7%</b>. Minden elpörgetett 100 zsetonból hosszú távon átlag 97,3 jön vissza. Nincs "forró" szám, nincs "esedékes" szín — a golyónak nincs memóriája.</p>
+    </div>
+
+    <div class="odds-table mono" aria-label="A rulett esélyei">
+      <div class="odds-row"><span>Piros / fekete, páros / páratlan</span><span>37-ből 18 · 1:1</span></div>
+      <div class="odds-row"><span>Tucat (1–12, 13–24, 25–36)</span><span>37-ből 12 · 2:1</span></div>
+      <div class="odds-row"><span>Egy szám</span><span>37-ből 1 · 35:1</span></div>
+      <div class="odds-row total"><span>A ház előnye</span><span>2,7%</span></div>
+    </div>
+
+    <div class="machine">
+      <div class="cabinet wide">
+        <div class="r-ball" id="rBall">?</div>
+
+        <div class="bet-label">Tét</div>
+        <div class="bet-row" id="rStakes">
+          <button class="bet-btn active" data-stake="1">1</button>
+          <button class="bet-btn" data-stake="2">2</button>
+          <button class="bet-btn" data-stake="5">5</button>
+        </div>
+
+        <div class="bet-label">Mire teszel?</div>
+        <div class="bet-grid" id="rBets">
+          <button class="bet-btn active" data-bet="red">Piros</button>
+          <button class="bet-btn" data-bet="black">Fekete</button>
+          <button class="bet-btn" data-bet="even">Páros</button>
+          <button class="bet-btn" data-bet="odd">Páratlan</button>
+          <button class="bet-btn" data-bet="d1">1–12</button>
+          <button class="bet-btn" data-bet="d2">13–24</button>
+          <button class="bet-btn" data-bet="d3">25–36</button>
+          <button class="bet-btn" data-bet="num">Egy szám</button>
+        </div>
+        <input class="num-input" id="rNum" type="number" min="0" max="36" value="17" aria-label="Szám 0 és 36 között">
+
+        <button class="spin-btn" id="rSpin">Pörgetés</button>
+        <div class="msg" id="rMsg">20 zsetonnal indulsz.</div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Egyenleg</div><div class="val mono" id="rBalance">20</div></div>
+          <div class="stat"><div class="label">Pörgetések</div><div class="val mono" id="rSpins">0</div></div>
+          <div class="stat"><div class="label">Elköltve összesen</div><div class="val mono" id="rStaked">0</div></div>
+          <div class="stat"><div class="label">Visszakapva összesen</div><div class="val mono" id="rWon">0</div></div>
+        </div>
+        <button class="reset-link" id="rReset">Zsetonok újratöltése</button>
+      </div>
+    </div>
+
+    <div class="sim-box">
+      <h3>Kicsaphatod a rendszert? A Martingale-módszer</h3>
+      <div class="explain">
+        <p>A leghíresebb "rendszer": mindig pirosra teszel 1 zsetont, és minden vesztés után megduplázod a tétet. Egy nyerés visszahozza az összes addigi veszteséget plusz 1 zsetont. Úgy tűnik, nem lehet veszíteni — egészen addig, amíg el nem fogy a pénzed.</p>
+        <p>Itt 1000 fiktív játékos próbálja ki: 20 zsetonnal indulnak, és akkor állnak fel, ha 30-ra nőtt az egyenlegük (+10), vagy ha elfogyott minden.</p>
+      </div>
+      <button class="spin-btn" id="mgBtn">1000 játékos szimulálása</button>
+      <div class="sim-out" id="mgOut"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. BLACKJACK ============ -->
+<section class="demo" id="blackjack">
+  <div class="wrap">
+    <h2>Blackjack — fiktív zsetonokkal</h2>
+    <div class="explain">
+      <p>A cél: a lapjaid összege minél közelebb legyen a 21-hez, de ne menjen fölé, és legyen több, mint az osztóé. Az osztó 17-nél megáll. A blackjack (ász + tízes érték) 3:2-t fizet. Itt egyszerűsítve játszunk: 6 pakli, nincs osztás (split) és biztosítás.</p>
+      <p>A blackjack különleges: itt a döntéseid tényleg számítanak. Alapstratégiával a ház előnye 0,5% körülire csökkenhet — de a ház előnye akkor sem tűnik el. A kaszinó ezt más módokon hozza vissza, például a kifizetés megváltoztatásával. Próbáld ki a 6:5-ös kifizetést is.</p>
+    </div>
+
+    <div class="odds-table mono" aria-label="A blackjack ház-előnye">
+      <div class="odds-row"><span>Tökéletes alapstratégiával, 3:2 kifizetéssel</span><span>kb. 0,5%</span></div>
+      <div class="odds-row"><span>Tökéletes alapstratégiával, 6:5 kifizetéssel</span><span>kb. 2%</span></div>
+      <div class="odds-row total"><span>Megérzésre játszva</span><span>jellemzően 2% fölött</span></div>
+    </div>
+
+    <div class="machine">
+      <div class="cabinet wide">
+        <div class="hand-label">Osztó <span class="mono" id="bjDealerVal"></span></div>
+        <div class="hand" id="bjDealer"></div>
+        <div class="hand-label">Te <span class="mono" id="bjPlayerVal"></span></div>
+        <div class="hand" id="bjPlayer"></div>
+
+        <div class="bj-actions">
+          <button class="bet-btn" id="bjHit" disabled>Lapot kérek</button>
+          <button class="bet-btn" id="bjStand" disabled>Megállok</button>
+          <button class="bet-btn" id="bjDouble" disabled>Duplázás</button>
+        </div>
+
+        <div class="bet-label">Tét</div>
+        <div class="bet-row" id="bjStakes">
+          <button class="bet-btn active" data-stake="10">10</button>
+          <button class="bet-btn" data-stake="20">20</button>
+          <button class="bet-btn" data-stake="50">50</button>
+        </div>
+        <div class="bet-label">Blackjack kifizetése</div>
+        <div class="bet-row" id="bjPay">
+          <button class="bet-btn active" data-ratio="1.5">3:2</button>
+          <button class="bet-btn" data-ratio="1.2">6:5</button>
+        </div>
+
+        <button class="spin-btn" id="bjDeal">Új leosztás</button>
+        <div class="msg" id="bjMsg">200 zsetonnal indulsz.</div>
+
+        <div class="toggle-row">
+          <label><input type="checkbox" id="bjHintOn"> Alapstratégia-tipp</label>
+          <label><input type="checkbox" id="bjCountOn"> Kártyaszámolás (Hi-Lo)</label>
+        </div>
+        <div class="hint-box" id="bjHint" hidden></div>
+        <div class="count-box" id="bjCount" hidden></div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Egyenleg</div><div class="val mono" id="bjBalance">200</div></div>
+          <div class="stat"><div class="label">Leosztások</div><div class="val mono" id="bjHands">0</div></div>
+          <div class="stat"><div class="label">Elköltve összesen</div><div class="val mono" id="bjStaked">0</div></div>
+          <div class="stat"><div class="label">Visszakapva összesen</div><div class="val mono" id="bjWon">0</div></div>
+        </div>
+        <button class="reset-link" id="bjReset">Zsetonok újratöltése</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="dossier">
+
+  <section class="sheet">
+    <div  class="wrap prose">
+      <h2>Hogyan van kitalálva a matek</h2>
+      <p>A nyerőgép esélyei nem véletlenszerűen kerültek ide: egy 90%-os visszafizetési arányú (RTP) nyerőgépet modelleznek, ami a valóságban is teljesen jellemző érték. Ez azt jelenti, hogy minden elköltött 100 zsetonból hosszú távon átlagosan 90 jön vissza — a fennmaradó 10 pedig garantáltan a szervezőnél marad.</p>
+      <p>Ez nem azon múlik, hogy szerencséd van-e aznap este. Ehhez csak annyi kell, hogy elég sok játékos elég sokat pörgessen: a nagy számok törvénye alapján a szervező eredménye így szinte pontosan a tervezett szinten áll meg — hónapról hónapra, kaszinóról kaszinóra. A bizonytalanság a te oldaladon van, nem az övékén.</p>
+      <p>A lottón és a legtöbb sportfogadásnál ugyanez az elv érvényesül, gyakran még kedvezőtlenebb aránnyal: a nyeremények összege mindig kisebb, mint a befizetések összege, a különbözet pedig a szervező bevétele. A "rendszer", a "módszer" vagy a "bevált stratégia" ezen a struktúrán semmit nem változtat, ha a játék maga tiszta véletlenen alapul.</p>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Hogyan "csal" a kaszinó?</h2>
+      <p>Röviden: sehogy — és nem is kell neki. Az engedélyes szervezőket a hatóság ellenőrzi, a nyerőgépek és az asztalok szabályai pedig eleve a ház javára szólnak. A trükk nem a szabályszegésben van, hanem abban, hogy a szabályok maguk is előnyt adnak neki. Ezek mind legálisak:</p>
+      <div class="defs">
+        <div class="def">
+          <h3>A zöld nulla</h3>
+          <p>A rulettkeréken 37 mező van, de a kifizetés úgy van megszabva, mintha csak 36 lenne. Ez az egyetlen mező adja a ház teljes előnyét.</p>
+        </div>
+        <div class="def">
+          <h3>A 6:5-ös blackjack</h3>
+          <p>A hagyományos 3:2 helyett 6:5-öt fizet a blackjack. Ránézésre alig különbözik, valójában ez a kis változtatás a ház előnyét durván a négyszeresére növeli.</p>
+        </div>
+        <div class="def">
+          <h3>A sok pakli és a keverőgép</h3>
+          <p>A 6–8 paklis cipő és az automata keverők nehezebbé teszik a lapok számolását. A számoláson alapuló játék ellen nem tilos védekezni — a kaszinó pedig meg is teszi.</p>
+        </div>
+        <div class="def">
+          <h3>A zseton, ami nem pénz</h3>
+          <p>Egy műanyag korong elköltése lélektanilag kisebb dolog, mint egy bankjegyé. Az agyunk másképp kezeli, így könnyebb túl sokat feltenni.</p>
+        </div>
+        <div class="def">
+          <h3>A gép, ami vesztéskor is ünnepel</h3>
+          <p>Sok nyerőgép több vonalon is lehet játszani. Ha 5 vonalra teszel, és egy vonalon 2-t nyersz, a gép fényekkel és hanggal ünnepel — pedig összesen veszítettél. Az agy a hangot jutalomként könyveli el.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>És te hogyan tudsz "csalni"?</h2>
+      <p>Az őszinte válasz: nem érdemes, és nagyrészt nem is lehet. Itt a határ a legális és az illegális között:</p>
+      <div class="defs">
+        <div class="def">
+          <h3>Az igazi csalás: bűncselekmény</h3>
+          <p>Megjelölt lapok, eszközök, utólagos tétrakás vagy bármi, ami a játék tisztaságát megsérti: ez csalás, büntetőjogi felelősséggel jár. A kaszinókban kamerák, osztók és felügyelők figyelik az asztalokat — a legtöbb próbálkozás gyorsan lebukik.</p>
+        </div>
+        <div class="def">
+          <h3>Az alapstratégia — legális, de nem nyerő</h3>
+          <p>Blackjacknél létezik matematikailag optimális döntés minden lapkombinációra. A szimulátoron bekapcsolhatod a tippet. A ház előnyét 0,5% körülire csökkenti — de nem fordítja meg. Rulettnél, nyerőgépnél, lottónál nincs ilyen stratégia.</p>
+        </div>
+        <div class="def">
+          <h3>A kártyaszámolás — legális, de nem érdemes</h3>
+          <p>A Hi-Lo módszer: a kis lapok (2–6) +1-et, a nagyok (10, J, Q, K, A) −1-et érnek, a középsők (7–9) nullát. Magas számnál sok nagy lap maradt a pakliban, ami a játékosnak kedvez. Kipróbálhatod a blackjack szimulátorban. A valóságban ez maximum 1% körüli előnyt jelent, hatalmas nyereség- és veszteségingadozással, nagy tőkével. Aki számol, azt a kaszinó észreveszi és kitilthatja.</p>
+        </div>
+        <div class="def">
+          <h3>A Martingale és társai</h3>
+          <p>A tétduplázós rendszerek nem változtatják meg a játék matematikáját, csak átrendezik a kockázatot: sok kis nyereség, ritka, de óriási veszteség. A rulettnél fent magad is láthattad.</p>
+        </div>
+        <div class="def">
+          <h3>Az egyetlen biztos nyerő lépés</h3>
+          <p>Az, ha időben felállsz. Minden játék, amelyet nem játszol végig, nulla veszteséget jelent.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Mennyit veszítesz 100 zsetonból?</h2>
+      <p>Hosszú távú átlag, minden elpörgetett 100 zsetonra számolva:</p>
+      <div class="odds-table mono" aria-label="Ház-előnyök összehasonlítása">
+        <div class="odds-row"><span>Blackjack, alapstratégiával</span><span>−0,5</span></div>
+        <div class="odds-row"><span>Blackjack, 6:5 kifizetéssel</span><span>−2</span></div>
+        <div class="odds-row"><span>Rulett (európai)</span><span>−2,7</span></div>
+        <div class="odds-row"><span>Nyerőgép (a szimulátor)</span><span>−10</span></div>
+        <div class="odds-row"><span>Lottó</span><span>kb. −50</span></div>
+      </div>
+      <p style="margin-top:20px;">A kisebb ház-előny nem jelent biztonságot: a blackjack gyorsabb, a tétek nagyobbak, így az óránkénti veszteség így is komoly lehet. Hosszú távon pedig mindegyik veszteség.</p>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Amit közben az agyad csinál</h2>
+      <p>A nyerőgép-szimulátorban talán feltűnt egy-két "majdnem" pörgetés, amikor két szimbólum összeállt, a harmadik pedig épphogy nem. Ez a néhány trükk nagy részben magyarázza, miért nehéz abbahagyni egy olyan játékot, amelyben statisztikailag szinte biztosan veszítesz.</p>
+      <div class="defs">
+        <div class="def">
+          <h3>A majdnem-nyerés</h3>
+          <p>Amikor a gép kimenetele közel áll a nyeréshez, az agy szinte ugyanúgy reagál rá, mintha nyertél volna — pedig ez pontosan ugyanolyan vesztés, mint bármelyik másik. Nem véletlen, hogy sok gép kifejezetten gyakran hoz ilyen mintázatot.</p>
+        </div>
+        <div class="def">
+          <h3>A kiszámíthatatlan jutalom</h3>
+          <p>Egy jutalom, ami rendszertelenül, kiszámíthatatlan időzítéssel érkezik, sokkal erősebben köti le a figyelmet, mint egy megbízható, rendszeres jutalom. Ugyanez az elv áll sok más függőséget okozó viselkedés hátterében is.</p>
+        </div>
+        <div class="def">
+          <h3>A szerencsejátékos-tévhit</h3>
+          <p>Több egymást követő vesztés után könnyű azt érezni, hogy "most már jönnie kell" a nyerésnek. Egy tisztán véletlenen alapuló játékban azonban minden egyes pörgetés független az előzőtől — a gépnek és a rulettkeréknek nincs memóriája.</p>
+        </div>
+        <div class="def">
+          <h3>A kontroll illúziója</h3>
+          <p>Saját számok választása a lottón, egy "megérzés" követése fogadásnál, egy "szerencsés" gép keresése a teremben — mindez azt az érzést kelti, hogy befolyásolni tudjuk a kimenetelt, miközben a legtöbb esetben tiszta véletlenről van szó.</p>
+        </div>
+        <div class="def">
+          <h3>A veszteség üldözése</h3>
+          <p>Minél többet veszítesz, annál erősebb a vágy, hogy egy újabb tétben visszanyerd. Ez az a pont, ahol a tétek — és a veszteségek — a leggyorsabban nőnek.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Mekkora a probléma Magyarországon</h2>
+      <p>A hazai felmérések az elmúlt évtizedben módszertől és évtől függően eltérő, de hasonló irányba mutató számokat adtak: a felnőtt lakosság becsülhetően 1–4%-a mutat szerencsejáték-függőségre utaló jeleket, egy 2018-as felmérés szerint pedig a felnőttek több mint negyede tekinthető valamilyen szinten veszélyeztetett játékosnak. A leggyorsabb lefolyású, legmagasabb kockázatú játékok a kutatások szerint a nyerőgépek, a kaszinójátékok és az online póker.</p>
+      <div class="stat-strip">
+        <div class="item">
+          <div class="n">~100k</div>
+          <div class="l">becsült szerencsejáték-függő felnőtt Magyarországon a korábbi országos felmérések szerint</div>
+        </div>
+        <div class="item">
+          <div class="n">1/4</div>
+          <div class="l">a magyar felnőttek ekkora hányada tekinthető valamilyen szinten veszélyeztetett játékosnak</div>
+        </div>
+      </div>
+      <p style="margin-top:28px;">A függőség nem csak azt érinti, aki játszik: a hozzátartozók többsége arról számol be, hogy a családi anyagi helyzet romlott, amióta a szenvedély megjelent.</p>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Ismerd fel a jeleket</h2>
+      <p>Szakemberek jellemzően ezeket a jeleket vizsgálják annak megítélésére, hogy valakinél kialakulóban van-e a szerencsejáték-függőség:</p>
+      <ul class="signs">
+        <li>Egyre nagyobb tétekben játszik ugyanahhoz az izgalomhoz</li>
+        <li>Már többször sikertelenül próbálta abbahagyni vagy visszafogni a játékot</li>
+        <li>Veszteség után szinte azonnal újra próbálkozik, hogy "visszanyerje"</li>
+        <li>Eltitkolja vagy letagadja mások előtt, mennyit játszik vagy mennyit veszített</li>
+        <li>Kölcsönt vesz fel, vagy eladja a holmiját, hogy tovább játszhasson</li>
+        <li>A munkája, a tanulmányai vagy a kapcsolatai sérülnek a játék miatt</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Ha úgy érzed, elszaladt veled a játék</h2>
+      <p>Ez gyakoribb, mint gondolnád, és nem szégyen segítséget kérni — sem magad, sem egy hozzád közel álló ember miatt. Az alábbi lehetőségek ingyenesek.</p>
+      <div class="help-list">
+        <div class="help-item">
+          <div class="h-title">Szerencsejáték-függőségi segélyvonal</div>
+          <div class="h-num">06 1 411 6778</div>
+          <div class="h-note">Hétköznapokon 15–19 óra között, ingyenesen és névtelenül hívható.</div>
+        </div>
+        <div class="help-item">
+          <div class="h-title">Lelkisegély-szolgálat</div>
+          <div class="h-num">116-123</div>
+          <div class="h-note">A hét minden napján, a nap 24 órájában hívható, ingyenesen — nem csak szerencsejáték-problémával, bármilyen lelki nehézséggel.</div>
+        </div>
+        <div class="help-item">
+          <div class="h-title">Önkorlátozó nyilatkozat</div>
+          <div class="h-note" style="margin-top:0;">Magyarországon írásban kérhető a szerencsejáték-felügyeleti hatóságnál (NAV) egy önkorlátozó nyilatkozat. Ez után a legális játékszervezők kötelesek megtagadni a beléptetésedet — kaszinóban, játékteremben és online is.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+
+</body>
+</html>
