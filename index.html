@@ -65,6 +65,16 @@
         <button class="reset-link" id="resetBtn">Zsetonok újratöltése</button>
       </div>
     </div>
+
+    <div class="sim-box">
+      <h3>Mi történik 1000 pörgetés alatt?</h3>
+      <div class="explain">
+        <p>Egy-egy pörgetés tele van izgalommal, de a matematika csak hosszú távon látszik. Itt a gép gyorsan lepörget 1000 pörgetést, egyenként 1 zsetonnal. Elméletben ez 1000 zseton elköltést és kb. 900 visszakapást jelent, vagyis kb. −100 nettó eredményt.</p>
+        <p>A nyerőgépnél a "2×", "8×", "100×" azt jelenti, hogy a tétednek ennyiszeresét kapod vissza. A 2× tehát 1 zseton tétre 2 zseton visszakapást, azaz 1 zseton nyereséget jelent. A többi arányt lent, a "Mit jelent az 1:1, 3:2, 6:5?" résznél magyarázom el.</p>
+      </div>
+      <button class="spin-btn" id="slotSim1">1000 pörgetés egy játékosnak</button>
+      <div class="sim-out" id="slotSimOut"></div>
+    </div>
   </div>
 </section>
 
@@ -106,7 +116,7 @@
           <button class="bet-btn" data-bet="d3">25–36</button>
           <button class="bet-btn" data-bet="num">Egy szám</button>
         </div>
-        <input class="num-input" id="rNum" type="number" min="0" max="36" value="17" aria-label="Szám 0 és 36 között">
+        <input class="num-input" id="rNum" type="number" min="0" max="36" value="17" placeholder="Szám 0–36" aria-label="Szám 0 és 36 között" hidden disabled>
 
         <button class="spin-btn" id="rSpin">Pörgetés</button>
         <div class="msg" id="rMsg">20 zsetonnal indulsz.</div>
@@ -140,7 +150,7 @@
   <div class="wrap">
     <h2>Blackjack — fiktív zsetonokkal</h2>
     <div class="explain">
-      <p>A cél: a lapjaid összege minél közelebb legyen a 21-hez, de ne menjen fölé, és legyen több, mint az osztóé. Az osztó 17-nél megáll. A blackjack (ász + tízes érték) 3:2-t fizet. Itt egyszerűsítve játszunk: 6 pakli, nincs osztás (split) és biztosítás.</p>
+      <p>A cél: a lapjaid összege minél közelebb legyen a 21-hez, de ne menjen fölé, és legyen több, mint az osztóé. Az osztó 17-nél megáll. A blackjack (ász + tízes érték) 3:2-t fizet: 10 zseton tétre 15 nyereséget kapsz (lásd lejjebb: "Mit jelent az 1:1, 3:2, 6:5?"). Itt egyszerűsítve játszunk: 6 pakli, nincs osztás (split) és biztosítás.</p>
       <p>A blackjack különleges: itt a döntéseid tényleg számítanak. Alapstratégiával a ház előnye 0,5% körülire csökkenhet — de a ház előnye akkor sem tűnik el. A kaszinó ezt más módokon hozza vissza, például a kifizetés megváltoztatásával. Próbáld ki a 6:5-ös kifizetést is.</p>
     </div>
 
@@ -207,6 +217,39 @@
       <p>A nyerőgép esélyei nem véletlenszerűen kerültek ide: egy 90%-os visszafizetési arányú (RTP) nyerőgépet modelleznek, ami a valóságban is teljesen jellemző érték. Ez azt jelenti, hogy minden elköltött 100 zsetonból hosszú távon átlagosan 90 jön vissza — a fennmaradó 10 pedig garantáltan a szervezőnél marad.</p>
       <p>Ez nem azon múlik, hogy szerencséd van-e aznap este. Ehhez csak annyi kell, hogy elég sok játékos elég sokat pörgessen: a nagy számok törvénye alapján a szervező eredménye így szinte pontosan a tervezett szinten áll meg — hónapról hónapra, kaszinóról kaszinóra. A bizonytalanság a te oldaladon van, nem az övékén.</p>
       <p>A lottón és a legtöbb sportfogadásnál ugyanez az elv érvényesül, gyakran még kedvezőtlenebb aránnyal: a nyeremények összege mindig kisebb, mint a befizetések összege, a különbözet pedig a szervező bevétele. A "rendszer", a "módszer" vagy a "bevált stratégia" ezen a struktúrán semmit nem változtat, ha a játék maga tiszta véletlenen alapul.</p>
+    </div>
+  </section>
+
+  <section class="sheet">
+    <div class="wrap prose">
+      <h2>Mit jelent az 1:1, 3:2, 6:5?</h2>
+      <p>A kifizetési arány azt mondja meg, mennyi <b>nyereséget</b> kapsz a tétedre, a tét visszaadásán felül. A bal oldali szám a nyereség, a jobb oldali a tét egysége. Nézzük 10 zseton tétre:</p>
+      <div class="defs">
+        <div class="def">
+          <h3>1:1</h3>
+          <p>10 zseton tétre 10 nyereség, vagyis összesen 20 jön vissza. A rulettben a piros/fekete és a páros/páratlan fizet így.</p>
+        </div>
+        <div class="def">
+          <h3>2:1</h3>
+          <p>10 zseton tétre 20 nyereség (összesen 30 jön vissza). A rulettben a tucatok fizetnek így.</p>
+        </div>
+        <div class="def">
+          <h3>35:1</h3>
+          <p>10 zseton tétre 350 nyereség. A rulettben egy számra tett tét fizet így. Csábítóan hangzik, de a nulla miatt a tisztességes arány 36:1 lenne. Ez az egy hiányzó zseton a ház előnye.</p>
+        </div>
+        <div class="def">
+          <h3>3:2</h3>
+          <p>10 zseton tétre 15 nyereség (összesen 25 jön vissza). A blackjack hagyományos kifizetése.</p>
+        </div>
+        <div class="def">
+          <h3>6:5</h3>
+          <p>10 zseton tétre 12 nyereség (összesen 22 jön vissza). Ugyanazt a blackjacket kapod, de 3 zsetonnal kevesebbet, minden egyes blackjacknél. Hosszú távon ez a ház egyik legjövedelmezőbb "apró betűs része".</p>
+        </div>
+        <div class="def">
+          <h3>2×, 8×, 100× (nyerőgép)</h3>
+          <p>Itt nem arányt, hanem szorzót használnak: a tétednek ennyiszeresét kapod vissza. A 2× tehát ugyanaz, mint az 1:1: 1 zseton tétre 2 jön vissza, abból 1 a nyereség. A 100× pedig 99:1 arányt jelent.</p>
+        </div>
+      </div>
     </div>
   </section>
 

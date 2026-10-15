@@ -138,6 +138,38 @@
   });
 
   renderStats();
+
+  /* ---- 1000 pörgetéses szimulációk ---- */
+  var simOut = document.getElementById("slotSimOut");
+
+  function simOneSession(spins){
+    var net = 0, minNet = 0, maxNet = 0, big = 0, mid = 0;
+    for (var i = 0; i < spins; i++){
+      var t = rollTier();
+      net += t.mult - 1;
+      if (t.key === "jackpot") big++;
+      if (t.key === "medium") mid++;
+      if (net < minNet) minNet = net;
+      if (net > maxNet) maxNet = net;
+    }
+    return { net: net, min: minNet, max: maxNet, big: big, mid: mid };
+  }
+  function signed(n){ return (n > 0 ? "+" : "") + n; }
+
+  document.getElementById("slotSim1").addEventListener("click", function(){
+    var r = simOneSession(1000);
+    var txt = "Elköltve: 1000 zseton<br>" +
+      "Visszakapva: " + (1000 + r.net) + " zseton<br>" +
+      "Nettó eredmény: " + signed(r.net) + " zseton<br>" +
+      "Közepes nyeremény: " + r.mid + "×, főnyeremény: " + r.big + "×<br>" +
+      "Legmagasabb pont: " + signed(r.max) + ", legmélyebb pont: " + signed(r.min) + "<br><br>";
+    if (r.net < 0){
+      txt += "A várható érték kb. −100 volt. Futtasd újra: minden alkalommal más jön ki, mert a főnyeremény eltolja az eredményt, de a gép hosszú távon mindig visszahúz.";
+    } else {
+      txt += "Ezúttal a főnyeremény (vagy a szerencse) mínusz nélkül kihozott. Ez előfordulhat, de ritka. Futtasd újra többször: hosszú távon a gép mindig visszahúz.";
+    }
+    simOut.innerHTML = txt;
+  });
 })();
 
 
@@ -198,6 +230,10 @@
     b.addEventListener("click", function(){
       betType = b.getAttribute("data-bet");
       activate(betBtns, b);
+      var showNum = betType === "num";
+      numInput.hidden = !showNum;
+      numInput.disabled = !showNum;
+      if (showNum) numInput.focus();
     });
   });
 
