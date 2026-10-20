@@ -15,7 +15,7 @@
  
   <div class="wrap">
     <h1>Ami a szerencsejáték mögött rejlik</h1>
-    <p class="lede">Ez az oldal nem szerencsejáték-oldal. Megmutatja, hogyan épül fel a matematika és a pszichológia a nyerőgépek, a rulett, a blackjack, a fogadóirodák és a lottó mögött — és kockázatmentes szimulátorokkal azt is átélheted, milyen érzés valójában, amikor a szabályokat eleve nem a te javadra találták ki.</p>
+    <p class="lede">Ez az oldal nem szerencsejáték-oldal. Megmutatja, hogyan épül fel a matematika és a pszichológia a nyerőgépek, a rulett, a blackjack, a kockajáték, a fogadóirodák és a lottó mögött — és kockázatmentes szimulátorokkal azt is átélheted, milyen érzés valójában, amikor a szabályokat eleve nem a te javadra találták ki.</p>
     <div class="bignum-row">
       <div class="bignum">
         <div class="n">−10%</div>
@@ -25,6 +25,7 @@
     <a href="#szimulator" class="cta">Kezdd a szimulátorral</a>
     <a href="#rulett" class="cta">Rulett</a>
     <a href="#blackjack" class="cta">Blackjack</a>
+    <a href="#kocka" class="cta">Kocka</a>
   </div>
 </header>
 
@@ -209,6 +210,152 @@
   </div>
 </section>
 
+
+<!-- ============ 4. KOCKAJÁTÉK ============ -->
+<section class="demo" id="kocka">
+  <div class="wrap">
+    <h2>Kockajáték — fiktív zsetonokkal</h2>
+    <div class="explain">
+      <p>Ez a Kingdom Come: Deliverance 2-ben is megtalálható kockajáték („Dice”), a középkori kocsmák kedvence. Hat kockával dobsz. A pontot érő kockákat kijelölöd és félreteszed, a többivel dobhatsz újra — vagy leadod a körben gyűjtött pontjaidat, és az ellenfél jön. Ha egy dobásban egyetlen kocka sem ér pontot, elbuksz: a körben addig gyűjtött pontjaid mind elvesznek. Ha mind a hat kocka pontot ért, újra dobhatod mind a hatot. Aki előbb eléri a célpontot, nyer.</p>
+      <p>Pontot csak az éppen dobott kockák adhatnak (a korábbi dobások kockáival nem rakhatsz ki kombinációt), és minden kijelölt kockának pontot kell érnie. Itt a döntéseid is számítanak: mikor állsz meg? A kockák viszont tiszta véletlen — és ahol pénzben játsszák, ott a kockát magát is lehet „csalni”.</p>
+    </div>
+
+    <div class="dice-ref">
+      <h3>Kocka: pontkombinációk</h3>
+      <div class="dice-ref-sub">Itt vannak a kockakombinációk és a pontértékeik.</div>
+      <div class="combo-cols">
+        <div class="combo-col">
+          <div class="combo"><span class="dice-row" data-dice="1"></span><span class="pts">100</span></div>
+          <div class="combo"><span class="dice-row" data-dice="5"></span><span class="pts">50</span></div>
+          <div class="combo"><span class="dice-row" data-dice="1 2 3 4 5"></span><span class="pts">500</span></div>
+          <div class="combo"><span class="dice-row" data-dice="2 3 4 5 6"></span><span class="pts">750</span></div>
+          <div class="combo"><span class="dice-row" data-dice="1 2 3 4 5 6"></span><span class="pts">1500</span></div>
+        </div>
+        <div class="combo-col">
+          <div class="combo"><span class="dice-row" data-dice="1 1 1"></span><span class="pts">1000</span></div>
+          <div class="combo"><span class="dice-row" data-dice="2 2 2"></span><span class="pts">200</span></div>
+          <div class="combo"><span class="dice-row" data-dice="3 3 3"></span><span class="pts">300</span></div>
+          <div class="combo"><span class="dice-row" data-dice="4 4 4"></span><span class="pts">400</span></div>
+          <div class="combo"><span class="dice-row" data-dice="5 5 5"></span><span class="pts">500</span></div>
+          <div class="combo"><span class="dice-row" data-dice="6 6 6"></span><span class="pts">600</span></div>
+          <div class="combo-text combo-note">Minden további, hármon felüli azonos kocka megduplázza az értéket (a példában kettesekkel):</div>
+          <div class="combo"><span class="dice-row" data-dice="2 2 2 2"></span><span class="pts">400</span></div>
+          <div class="combo"><span class="dice-row" data-dice="2 2 2 2 2"></span><span class="pts">800</span></div>
+          <div class="combo"><span class="dice-row" data-dice="2 2 2 2 2 2"></span><span class="pts">1600</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="explain">
+      <p>A „még egy dobás” ára: az alábbi táblázat azt mutatja, mekkora az esélye, hogy a következő dobásban egyetlen pontot érő kocka sincs, vagyis elbukod a körödet (tisztességes kockákkal).</p>
+    </div>
+    <div class="odds-table mono" aria-label="A bukás esélye dobásonként">
+      <div class="odds-row"><span>6 kockával dobsz</span><span>kb. 3%</span></div>
+      <div class="odds-row"><span>5 kockával dobsz</span><span>kb. 8%</span></div>
+      <div class="odds-row"><span>4 kockával dobsz</span><span>kb. 16%</span></div>
+      <div class="odds-row"><span>3 kockával dobsz</span><span>kb. 28%</span></div>
+      <div class="odds-row"><span>2 kockával dobsz</span><span>kb. 44%</span></div>
+      <div class="odds-row total"><span>1 kockával dobsz</span><span>3-ból 2</span></div>
+    </div>
+
+    <div class="dice-ref badge-ref">
+      <h3>Jelvények</h3>
+      <div class="dice-ref-sub">Te szabadon választasz jelvényt. Az ellenfélnek vagy nincs, vagy a játszma elején sorsolunk neki egyet — hogy ne tudd előre, mivel kell számolnod (a Hatástalanítót is kapja meg), de a játszma kezdetén kiderül, melyik az.</div>
+      <div class="combo"><span class="badge-ico">🍀</span><span class="combo-text"><b>Szerencsehozó</b> — minden leadott körpontot 15%-kal megnövel (5-re kerekítve). Minél nagyobb a kör, annál többet ér.</span></div>
+      <div class="combo"><span class="badge-ico">🛟</span><span class="combo-text"><b>Mentőöv</b> — egyszer egy játszmában: ha elbukod a dobást, a körben addig gyűjtött pontjaid (pl. 500) nem vesznek el, hanem a számládra kerülnek.</span></div>
+      <div class="combo"><span class="badge-ico">🚫</span><span class="combo-text"><b>Hatástalanító</b> — az ellenfél jelvénye az egész játszmában nem működik. Ha mindkettő ezt viszi, kioltják egymást.</span></div>
+    </div>
+
+    <div class="machine">
+      <div class="cabinet wide">
+        <div class="dice-board">
+          <div class="dice-box" id="dcBoxYou"><div class="label">Te</div><div class="val mono" id="dcYou">0</div></div>
+          <div class="dice-box" id="dcBoxOpp"><div class="label">Ellenfél</div><div class="val mono" id="dcOpp">0</div></div>
+          <div class="dice-box"><div class="label">Körpont</div><div class="val mono" id="dcTurnPts">0</div></div>
+          <div class="dice-box"><div class="label">Cél</div><div class="val mono" id="dcTargetShow">2000</div></div>
+        </div>
+
+        <div class="dice-tray" id="dcTray"></div>
+        <div class="dice-info" id="dcInfo"></div>
+
+        <div class="bj-actions">
+          <button class="bet-btn" id="dcRoll" disabled>Dobás</button>
+          <button class="bet-btn" id="dcKeepRoll" disabled>Megtartom és újra dobok</button>
+          <button class="bet-btn" id="dcKeepBank" disabled>Megtartom és leadom</button>
+        </div>
+
+        <div id="dcSettings">
+        <div class="dice-lock-note" id="dcLockNote" hidden>🔒 A beállítások a játszma végéig zárolva vannak.</div>
+        <div class="bet-label">Tét</div>
+        <div class="bet-row" id="dcStakes">
+          <button class="bet-btn active" data-stake="1">1</button>
+          <button class="bet-btn" data-stake="2">2</button>
+          <button class="bet-btn" data-stake="5">5</button>
+        </div>
+        <div class="bet-label">Cél (pont)</div>
+        <div class="bet-row" id="dcTargets">
+          <button class="bet-btn" data-target="1000">1000</button>
+          <button class="bet-btn active" data-target="2000">2000</button>
+          <button class="bet-btn" data-target="4000">4000</button>
+        </div>
+        <div class="bet-label">A te kockáid</div>
+        <div class="bet-row" id="dcYouSet">
+          <button class="bet-btn active" data-you="fair">Tisztességes</button>
+          <button class="bet-btn" data-you="loaded">Cinkelt</button>
+        </div>
+        <div class="bet-label">Az ellenfél kockái</div>
+        <div class="bet-row" id="dcOppSet">
+          <button class="bet-btn active" data-opp="fair">Tisztességes</button>
+          <button class="bet-btn" data-opp="loaded">Cinkelt</button>
+        </div>
+        <div class="bet-label">A te jelvényed</div>
+        <div class="bet-row multi" id="dcYouBadge">
+          <button class="bet-btn active" data-ybadge="none">Nincs</button>
+          <button class="bet-btn" data-ybadge="lucky">🍀 Szerencsehozó</button>
+          <button class="bet-btn" data-ybadge="net">🛟 Mentőöv</button>
+          <button class="bet-btn" data-ybadge="counter">🚫 Hatástalanító</button>
+        </div>
+        <div class="bet-label">Az ellenfél jelvénye</div>
+        <div class="bet-row multi" id="dcOppBadge">
+          <button class="bet-btn active" data-obadge="none">Nincs</button>
+          <button class="bet-btn" data-obadge="random">🎲 Véletlen</button>
+        </div>
+        <div class="badge-status">
+          <div>Te: <span id="dcBadgeYou">nincs jelvény</span></div>
+          <div>Ellenfél: <span id="dcBadgeOpp">nincs jelvény</span></div>
+        </div>
+        <div class="dice-note">Cinkelt kockánál minden dobásnál 8% eséllyel lebuksz: ilyenkor elveszíted a tétet, és bírságot is fizetsz.</div>
+
+        </div>
+        <button class="spin-btn" id="dcNew">Új játszma — 1 zseton</button>
+        <div class="msg" id="dcMsg" aria-live="polite">20 zsetonnal indulsz.</div>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Egyenleg</div><div class="val mono" id="dcBalance">20</div></div>
+          <div class="stat"><div class="label">Játszmák</div><div class="val mono" id="dcGames">0</div></div>
+          <div class="stat"><div class="label">Elköltve összesen</div><div class="val mono" id="dcStaked">0</div></div>
+          <div class="stat"><div class="label">Visszakapva összesen</div><div class="val mono" id="dcWon">0</div></div>
+          <div class="stat"><div class="label">Elbukott pontok</div><div class="val mono" id="dcLost">0</div></div>
+          <div class="stat"><div class="label">Jelvényekből szerzett pont</div><div class="val mono" id="dcBadgeGain">0</div></div>
+          <div class="stat"><div class="label">Ellenfél 1-es / 5-ös aránya</div><div class="val mono" id="dcOppRate">–</div></div>
+        </div>
+        <button class="reset-link" id="dcReset">Zsetonok újratöltése</button>
+      </div>
+    </div>
+
+    <div class="sim-box">
+      <h3>Mennyit számít a cinkelt kocka?</h3>
+      <div class="explain">
+        <p>Tisztességes kockákkal a kockajáték fele-fele esély. A cinkelt kockán az 1-es és az 5-ös kétszer akkora eséllyel jön, így a pontot érő kockák aránya 33%-ról 50%-ra nő — és ez rengeteget számít. A jelvényeket is kipróbálhatod. Itt két egyforma gép játszik egymás ellen: soronként 2000 játszmát, 2000 pontig. Az „átlag” azt mutatja, mennyit nyersz vagy buksz átlagosan egy játszmán, a tét többszöröseként.</p>
+      </div>
+      <button class="spin-btn" id="dcSim">7 × 2000 játszma szimulálása</button>
+      <div class="sim-out" id="dcSimOut"></div>
+    </div>
+  </div>
+</section>
+
 <main class="dossier">
 
   <section class="sheet">
@@ -278,6 +425,10 @@
           <h3>A gép, ami vesztéskor is ünnepel</h3>
           <p>Sok nyerőgép több vonalon is lehet játszani. Ha 5 vonalra teszel, és egy vonalon 2-t nyersz, a gép fényekkel és hanggal ünnepel — pedig összesen veszítettél. Az agy a hangot jutalomként könyveli el.</p>
         </div>
+        <div class="def">
+          <h3>A cinkelt kocka</h3>
+          <p>A kockajátéknál a legrégebbi csalás a kocka maga: a cinkelt kockán bizonyos oldalak nagyobb eséllyel jönnek. A szimulátorban az ellenfél kockáit átállíthatod: az 1-es és az 5-ös kétszer akkora eséllyel jön, a pontot érő kockák aránya 33%-ról 50%-ra nő, és a tisztességes játékos esélye drasztikusan romlik. Az engedélyes kaszinónak erre nincs szüksége, az illegális, ellenőrizetlen asztaloknál viszont pont ez a tipikus csalás — ezért ismeretlen helyen pénzben kockázni különösen rossz ötlet.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -302,6 +453,10 @@
         <div class="def">
           <h3>A Martingale és társai</h3>
           <p>A tétduplázós rendszerek nem változtatják meg a játék matematikáját, csak átrendezik a kockázatot: sok kis nyereség, ritka, de óriási veszteség. A rulettnél fent magad is láthattad.</p>
+        </div>
+        <div class="def">
+          <h3>Cinkelt kockával csalni</h3>
+          <p>A szimulátorban kipróbálhatod a saját cinkelt kockádat is: erős előnyt ad, de minden dobásnál 8% eséllyel lebuksz, és akkor elveszíted a tétet, sőt bírságot is fizetsz. A szimuláció megmutatja: a lebukás kockázata elviszi az előnyt. A valóságban a cinkelt kocka használata csalás, vagyis bűncselekmény.</p>
         </div>
         <div class="def">
           <h3>Az egyetlen biztos nyerő lépés</h3>
@@ -350,6 +505,10 @@
         <div class="def">
           <h3>A veszteség üldözése</h3>
           <p>Minél többet veszítesz, annál erősebb a vágy, hogy egy újabb tétben visszanyerd. Ez az a pont, ahol a tétek — és a veszteségek — a leggyorsabban nőnek.</p>
+        </div>
+        <div class="def">
+          <h3>A „még egy dobás”</h3>
+          <p>A kockajátékban minden dobás előtt eldöntheted, hogy megállsz-e. Két kockával 44%, egy kockával 2/3 a bukás esélye — mégis nehéz leadni a pontokat, mert az agy a körben összegyűjtött pontokat már a magáénak érzi, és a veszteségtől jobban fél, mint amennyire a nyereségnek örül. A szimulátor külön mutatja, mennyi pontot buktál el így.</p>
         </div>
       </div>
     </div>

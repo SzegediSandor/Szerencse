@@ -605,3 +605,698 @@
   newShoe();
   render();
 })();
+
+/* =========================================================
+   4. KOCKAJÁTÉK (Kingdom Come: Deliverance 2 „Dice” stílusban)
+   ========================================================= */
+(function(){
+  "use strict";
+
+  // DICE-CORE-START
+  // ---------------------------------------------------------------
+  //  A KOCKAJÁTÉK SZABÁLYAI (itt még semmi sem nyúl a weboldalhoz)
+  //  Kocka értékek: 1–6.
+  // ---------------------------------------------------------------
+  var DICE_COUNT = 6;
+  var SUSPICION = 0.08;                        // cinkelt kockánál dobásonként ennyi eséllyel buksz le
+  // A cinkelt kocka: 8 „oldala” van, az 1-es és az 5-ös kétszer akkora eséllyel jön, mint a többi.
+  var LOADED_FACES = [1, 1, 5, 5, 2, 3, 4, 6];
+
+  function randInt(n){ return Math.floor(Math.random() * n); }
+
+  // Egy kocka dobása. set: "fair" (tisztességes) vagy "loaded" (cinkelt).
+  function rollFace(set){
+    return (set === "loaded") ? LOADED_FACES[randInt(LOADED_FACES.length)] : 1 + randInt(6);
+  }
+
+  // ---------------------------------------------------------------
+  //  JELVÉNYEK (mindenkinek legfeljebb egy lehet)
+  //    "lucky"   – Szerencsehozó: a leadott körpontokat BOOST aránnyal megnöveli
+  //    "net"     – Mentőöv: egyszer megmenti a körpontokat, ha elbukod a dobást
+  //    "counter" – Hatástalanító: az ellenfél jelvénye nem működik
+  // ---------------------------------------------------------------
+  var BOOST = 0.15;
+
+  // A Szerencsehozó bónusza a leadott pontokra (5-re kerekítve). 0, ha nincs jelvény, vagy az ellenfél hatástalanítja.
+  function boostBonus(pts, mine, theirs){
+    if (mine !== "lucky" || theirs === "counter") return 0;
+    return Math.round(pts * BOOST / 5) * 5;
+  }
+  // Működik-e a Mentőöv? (A „már elhasználták-e” kérdést a játék külön követi.)
+  function netWorks(mine, theirs){
+    return mine === "net" && theirs !== "counter";
+  }
+
+  // ---------------------------------------------------------------
+  //  PONTOZÁS
+  // ---------------------------------------------------------------
+  // Hány pontot ér az adott kockacsoport, ha EGYETLEN kombinációt alkot? (0 = nem kombináció)
+  //   sima 1-es: 100, sima 5-ös: 50 · hármas vagy több azonos: érték×100 (az 1-es hármas 1000),
+  //   minden további azonos kocka duplázza · sorozat: 1–5 = 500, 2–6 = 750, 1–6 = 1500
+  function groupScore(vals, sub){
+    var counts = [0, 0, 0, 0, 0, 0, 0], size = 0, i;
+    for (i = 0; i < vals.length; i++){
+      if (sub & (1 << i)){ size++; counts[vals[i]]++; }
+    }
+    if (size === 1){
+      if (counts[1] === 1) return 100;
+      if (counts[5] === 1) return 50;
+      return 0;
+    }
+    var best = 0;
+    if (size >= 3){                            // azonos kockák (hármas, négyes, ...)
+      for (var v = 1; v <= 6; v++){
+        if (counts[v] === size){
+          var base = (v === 1) ? 1000 : v * 100;
+          var s = base * Math.pow(2, size - 3);
+          if (s > best) best = s;
+        }
+      }
+    }
+    if (size === 5 || size === 6){             // sorozat
+      var distinct = true;
+      for (i = 1; i <= 6; i++){ if (counts[i] > 1) distinct = false; }
+      if (distinct){
+        if (size === 6) best = Math.max(best, 1500);
+        else {
+          if (counts[1] === 0) best = Math.max(best, 750);   // 2–3–4–5–6
+          if (counts[6] === 0) best = Math.max(best, 500);   // 1–2–3–4–5
+        }
+      }
+    }
+    return best;
+  }
+
+  // A kockák legjobb felosztása kombinációkra úgy, hogy MINDEN kocka pontot érjen.
+  // 0 = a kijelölés nem érvényes (van benne kocka, ami nem ér pontot).
+  var scoreCache = {};
+  function scoreOf(values){
+    var sorted = values.slice().sort();
+    var key = sorted.join("");
+    if (scoreCache[key] !== undefined) return scoreCache[key];
+    var n = sorted.length, full = (1 << n) - 1;
+    var best = [], mask, sub;
+    for (mask = 0; mask <= full; mask++) best[mask] = -1;
+    best[0] = 0;
+    for (mask = 1; mask <= full; mask++){
+      var low = mask & -mask;
+      for (sub = mask; sub > 0; sub = (sub - 1) & mask){
+        if (!(sub & low)) continue;
+        var g = groupScore(sorted, sub);
+        if (g > 0 && best[mask ^ sub] >= 0 && g + best[mask ^ sub] > best[mask]){
+          best[mask] = g + best[mask ^ sub];
+        }
+      }
+    }
+    var result = best[full] > 0 ? best[full] : 0;
+    scoreCache[key] = result;
+    return result;
+  }
+
+  // Egy dobás összes lehetséges (érvényes) kijelölése: [{ keep: [értékek], score: pont }, ...]
+  // Ha üres, a dobás „bukó”: nincs benne pontot érő kocka.
+  var analyzeCache = {};
+  function analyze(values){
+    var sorted = values.slice().sort();
+    var key = sorted.join("");
+    if (analyzeCache[key]) return analyzeCache[key];
+    var n = sorted.length, seen = {}, list = [];
+    for (var mask = 1; mask < (1 << n); mask++){
+      var keep = [];
+      for (var i = 0; i < n; i++){ if (mask & (1 << i)) keep.push(sorted[i]); }
+      var k = keep.join("");
+      if (seen[k]) continue;
+      seen[k] = true;
+      var s = scoreOf(keep);
+      if (s > 0) list.push({ keep: keep, score: s });
+    }
+    analyzeCache[key] = list;
+    return list;
+  }
+
+  // --- a kockák ("dice" tömb: { v: érték, locked: félre van-e téve }) ---
+  function makeDice(){
+    var d = [];
+    for (var i = 0; i < DICE_COUNT; i++) d.push({ v: 0, locked: false });
+    return d;
+  }
+  function rollFree(dice, set){
+    for (var i = 0; i < dice.length; i++){
+      if (!dice[i].locked) dice[i].v = rollFace(set);
+    }
+  }
+  function freeValues(dice){
+    var out = [];
+    for (var i = 0; i < dice.length; i++){ if (!dice[i].locked) out.push(dice[i].v); }
+    return out;
+  }
+  // A megtartandó értékekhez kikeresi, melyik kockákat kell félretenni (a legkisebb sorszámúakat).
+  function pickDice(dice, keepValues){
+    var idx = [], used = {};
+    for (var k = 0; k < keepValues.length; k++){
+      for (var i = 0; i < dice.length; i++){
+        if (!dice[i].locked && !used[i] && dice[i].v === keepValues[k]){ used[i] = true; idx.push(i); break; }
+      }
+    }
+    return idx;
+  }
+
+  // ---------------------------------------------------------------
+  //  AZ ELLENFÉL (és a szimuláció) JÁTÉKOSA
+  //  hold[r]: mennyit ér, ha a megtartás után r kocka marad a dobáshoz
+  //  bank[r]: ennyi körpont fölött leadja a pontot, ha r kockája maradt
+  // ---------------------------------------------------------------
+  var BOT = {
+    hold: [0, 0, 20, 40, 60, 80, 100],
+    bank: [0, 300, 300, 350, 500, 1500, 99999]
+  };
+  // dönt: melyik kockákat tartsa meg, és megálljon-e (bank)
+  function botDecide(rollValues, turnPts, myTotal, oppTotal, target, bot){
+    var cands = analyze(rollValues), best = null, bestVal = -1, i;
+    for (i = 0; i < cands.length; i++){
+      var rem = rollValues.length - cands[i].keep.length;
+      if (rem === 0) rem = 6;                              // minden kocka pontot ért: újra mind a 6
+      var val = cands[i].score + bot.hold[rem];
+      if (myTotal + turnPts + cands[i].score >= target) val += 100000;   // ha ezzel nyer, ez a legjobb
+      if (val > bestVal){ bestVal = val; best = cands[i]; }
+    }
+    var after = turnPts + best.score;
+    var left = rollValues.length - best.keep.length;
+    var hot = (left === 0);
+    var rem2 = hot ? 6 : left;
+    var stop;
+    if (myTotal + after >= target) stop = true;
+    else if (hot) stop = false;
+    else {
+      var th = bot.bank[rem2];
+      // ha az ellenfél már közel a célhoz, érdemes többet kockáztatni
+      if (oppTotal + 600 >= target) th = Math.max(th, Math.min(target - myTotal, 1500));
+      stop = after >= th;
+    }
+    return { keep: best.keep, score: best.score, bank: stop, hot: hot };
+  }
+
+  // Egy teljes játszma két gép között (a szimulációhoz).
+  // cfg: { target, youSet, oppSet, youFirst, youBot, oppBot, suspicion, youBadge, oppBadge }
+  // Visszaadja: "you" (te nyertél), "opp" (az ellenfél nyert) vagy "caught" (lebuktál a cinkelt kockával).
+  function playBotGame(cfg){
+    var total = [0, 0];
+    var badge = [cfg.youBadge || "none", cfg.oppBadge || "none"];
+    var netUsed = [false, false];
+    var turn = cfg.youFirst ? 0 : 1;
+    for (var guard = 0; guard < 500; guard++){
+      var set = (turn === 0) ? cfg.youSet : cfg.oppSet;
+      var bot = (turn === 0) ? cfg.youBot : cfg.oppBot;
+      var dice = makeDice(), pts = 0, over = false;
+      for (var rolls = 0; rolls < 80 && !over; rolls++){
+        rollFree(dice, set);
+        if (turn === 0 && set === "loaded" && Math.random() < cfg.suspicion) return "caught";
+        var vals = freeValues(dice);
+        if (analyze(vals).length === 0){                                 // bukás
+          if (pts > 0 && !netUsed[turn] && netWorks(badge[turn], badge[1 - turn])){
+            netUsed[turn] = true;                                        // a Mentőöv megmenti a körpontokat
+            total[turn] += pts;
+            if (total[turn] >= cfg.target) return (turn === 0) ? "you" : "opp";
+          }
+          over = true; break;                                            // egyébként a körpontok elvesznek
+        }
+        var d = botDecide(vals, pts, total[turn], total[1 - turn], cfg.target, bot);
+        pts += d.score;
+        var idx = pickDice(dice, d.keep), i;
+        for (i = 0; i < idx.length; i++) dice[idx[i]].locked = true;
+        if (d.hot){ for (i = 0; i < dice.length; i++) dice[i].locked = false; }
+        if (d.bank){
+          total[turn] += pts + boostBonus(pts, badge[turn], badge[1 - turn]);
+          if (total[turn] >= cfg.target) return (turn === 0) ? "you" : "opp";
+          over = true;
+        }
+      }
+      turn = 1 - turn;
+    }
+    return "none";
+  }
+  // DICE-CORE-END
+
+  // ---------------------------------------------------------------
+  //  A JÁTÉK MENETE
+  // ---------------------------------------------------------------
+  var START = 20;
+  var $ = function(id){ return document.getElementById(id); };
+
+  var el = {
+    tray: $("dcTray"), info: $("dcInfo"), msg: $("dcMsg"),
+    you: $("dcYou"), opp: $("dcOpp"), turnPts: $("dcTurnPts"), targetShow: $("dcTargetShow"),
+    boxYou: $("dcBoxYou"), boxOpp: $("dcBoxOpp"),
+    roll: $("dcRoll"), keepRoll: $("dcKeepRoll"), keepBank: $("dcKeepBank"), newGame: $("dcNew"),
+    balance: $("dcBalance"), games: $("dcGames"), staked: $("dcStaked"), won: $("dcWon"),
+    lost: $("dcLost"), oppRate: $("dcOppRate"),
+    settings: $("dcSettings"), lockNote: $("dcLockNote"),
+    badgeYou: $("dcBadgeYou"), badgeOpp: $("dcBadgeOpp"), badgeGain: $("dcBadgeGain")
+  };
+  var stakeBtns  = document.querySelectorAll("#dcStakes .bet-btn");
+  var targetBtns = document.querySelectorAll("#dcTargets .bet-btn");
+  var youBtns    = document.querySelectorAll("#dcYouSet .bet-btn");
+  var oppBtns    = document.querySelectorAll("#dcOppSet .bet-btn");
+  var youBadgeBtns = document.querySelectorAll("#dcYouBadge .bet-btn");
+  var oppBadgeBtns = document.querySelectorAll("#dcOppBadge .bet-btn");
+
+  var bal = START, games = 0, staked = 0, won = 0;
+  var lostPts = 0;                       // a „még egy dobás” ára: bukásnál elveszett pontok
+  var oppDiceN = 0, oppScoringN = 0;     // az ellenfél kockáin hány 1-es/5-ös jött
+  var stake = 1, target = 2000, youSet = "fair", oppSet = "fair";
+  var youBadge = "none", oppBadge = "none";
+  var oppSetting = "none", oppRevealed = false;   // az ellenfél jelvénye: "none" vagy "random" (a játszma elején sorsoljuk)
+  var badgeGain = 0;                     // a jelvényekből szerzett pontok (te): bónusz + megmentett pontok
+  var BADGE_NAME = { none: "nincs", lucky: "🍀 Szerencsehozó", net: "🛟 Mentőöv", counter: "🚫 Hatástalanító" };
+  var ROLL_YOU = 600, ROLL_OPP = 1300;   // a dobás-animáció hossza (ms): az ellenfélé lassabb
+  var g = null;                          // az aktuális játszma
+  var phase = "idle";                    // idle | start | rolling | select | opp | over
+  var sel = [false, false, false, false, false, false];
+  var gameId = 0;                        // minden új játszma új azonosítót kap (a régi időzítők így leállnak)
+  var curScore = 0;                      // a jelenlegi kijelölés pontja
+
+  // --- kocka kirajzolása (pöttyök egy 3×3-as rácsban) ---
+  var PIPS = {
+    1: [[2,2]],
+    2: [[1,1],[3,3]],
+    3: [[1,1],[2,2],[3,3]],
+    4: [[1,1],[1,3],[3,1],[3,3]],
+    5: [[1,1],[1,3],[2,2],[3,1],[3,3]],
+    6: [[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]
+  };
+  function faceInto(node, v){
+    node.innerHTML = "";
+    var p = PIPS[v];
+    for (var i = 0; i < p.length; i++){
+      var pip = document.createElement("i");
+      pip.className = "pip";
+      pip.style.gridRow = p[i][0];
+      pip.style.gridColumn = p[i][1];
+      node.appendChild(pip);
+    }
+  }
+
+  // a pontkombináció-táblázat kockái (a HTML-ben: data-dice="1 1 1")
+  Array.prototype.forEach.call(document.querySelectorAll(".dice-row[data-dice]"), function(row){
+    row.getAttribute("data-dice").split(" ").forEach(function(t){
+      var d = document.createElement("span");
+      d.className = "die mini";
+      faceInto(d, parseInt(t, 10));
+      row.appendChild(d);
+    });
+  });
+
+  // --- kirajzolás ---
+  function setMsg(text, cls){ el.msg.textContent = text; el.msg.className = cls || "msg"; }
+
+  function renderDice(){
+    el.tray.innerHTML = "";
+    for (var i = 0; i < DICE_COUNT; i++){
+      var d = g ? g.dice[i] : { v: 0, locked: false };
+      var rolling = !!g && phase === "rolling" && !d.locked;
+      var visible = !!g && (d.locked || (g.shown && phase !== "rolling"));
+      var b = document.createElement("button");
+      var canSel = (phase === "select" && !d.locked);
+      var cls = "die" + (visible ? "" : " blank") + (rolling ? " rolling" : "") + (d.locked ? " locked" : "") +
+                (sel[i] ? " selected" : "") + (canSel ? " selectable" : "");
+      b.className = cls;
+      if (visible) faceInto(b, d.v); else b.textContent = rolling ? "?" : "";
+      b.disabled = !canSel;
+      b.setAttribute("aria-label", visible ? "Kocka: " + d.v : "Kocka");
+      (function(idx){ b.addEventListener("click", function(){ toggle(idx); }); })(i);
+      el.tray.appendChild(b);
+    }
+  }
+
+  function renderBoard(){
+    el.you.textContent = g ? g.you : 0;
+    el.opp.textContent = g ? g.opp : 0;
+    el.turnPts.textContent = g ? g.pts : 0;
+    el.targetShow.textContent = target;
+    el.boxYou.className = "dice-box" + (g && g.turn === "you" && phase !== "over" ? " active" : "");
+    el.boxOpp.className = "dice-box" + (g && g.turn === "opp" && phase !== "over" ? " active" : "");
+  }
+
+  // jelvény állapot: kész / elhasználva / hatástalanítva
+  function badgeStatus(who){
+    var mine = (who === "you") ? youBadge : oppBadge, theirs = (who === "you") ? oppBadge : youBadge;
+    if (who === "opp" && !oppRevealed && oppSetting === "random") return "véletlen — a játszma elején derül ki";
+    if (mine === "none") return "nincs jelvény";
+    var t = BADGE_NAME[mine];
+    if (mine === "counter") return t + " — " + (theirs === "none" ? "nincs mit hatástalanítani" : (theirs === "counter" ? "kioltják egymást" : "az ellenfél jelvénye hatástalan"));
+    if (theirs === "counter") return t + " — hatástalanítva";
+    if (mine === "net") return t + (g && g.netUsed[who] ? " — elhasználva" : " — kész");
+    return t + " — aktív";
+  }
+
+  function renderStats(){
+    el.badgeYou.textContent = badgeStatus("you");
+    el.badgeOpp.textContent = badgeStatus("opp");
+    el.badgeGain.textContent = badgeGain;
+    el.balance.textContent = bal;
+    el.games.textContent = games;
+    el.staked.textContent = staked;
+    el.won.textContent = won;
+    el.lost.textContent = lostPts;
+    el.oppRate.textContent = oppDiceN ? Math.round(oppScoringN / oppDiceN * 100) + "%" : "–";
+  }
+
+  function renderControls(){
+    var playing = (phase !== "idle" && phase !== "over");
+    el.roll.disabled = (phase !== "start");
+    el.newGame.disabled = playing || bal < stake;
+    el.newGame.textContent = "Új játszma — " + stake + " zseton";
+    if (el.settings) el.settings.classList.toggle("locked", playing);
+    if (el.lockNote) el.lockNote.hidden = !playing;
+    Array.prototype.forEach.call(stakeBtns,  function(b){ b.disabled = playing; });
+    Array.prototype.forEach.call(targetBtns, function(b){ b.disabled = playing; });
+    Array.prototype.forEach.call(youBtns,    function(b){ b.disabled = playing; });
+    Array.prototype.forEach.call(oppBtns,    function(b){ b.disabled = playing; });
+    Array.prototype.forEach.call(youBadgeBtns, function(b){ b.disabled = playing; });
+    Array.prototype.forEach.call(oppBadgeBtns, function(b){ b.disabled = playing; });
+    if (phase !== "select"){ el.keepRoll.disabled = true; el.keepBank.disabled = true; }
+  }
+
+  function render(){ renderDice(); renderBoard(); renderStats(); renderControls(); }
+
+  // --- kijelölés ---
+  function selectedIdx(){
+    var out = [];
+    for (var i = 0; i < DICE_COUNT; i++){ if (sel[i]) out.push(i); }
+    return out;
+  }
+  function updateSel(){
+    var vals = [], idx = selectedIdx(), i;
+    for (i = 0; i < idx.length; i++) vals.push(g.dice[idx[i]].v);
+    curScore = vals.length ? scoreOf(vals) : 0;
+    var t;
+    if (!vals.length) t = "Jelöld ki a pontot érő kockákat.";
+    else if (!curScore) t = "Ez a kijelölés nem érvényes: minden kijelölt kockának pontot kell érnie.";
+    else t = "Kijelölve: +" + curScore + " pont. Ha megtartod, a körpontod " + (g.pts + curScore) + " lesz.";
+    el.info.textContent = t;
+    el.keepRoll.disabled = !(phase === "select" && curScore > 0);
+    el.keepBank.disabled = !(phase === "select" && curScore > 0);
+  }
+  function clearSel(){ sel = [false, false, false, false, false, false]; curScore = 0; }
+  function toggle(i){
+    if (phase !== "select" || g.dice[i].locked) return;
+    sel[i] = !sel[i];
+    updateSel();
+    renderDice();
+  }
+
+  // --- dobás (a te és az ellenfél dobása is) ---
+  function doRoll(who, done){
+    var id = gameId;
+    var set = (who === "you") ? youSet : oppSet;
+    phase = "rolling";
+    rollFree(g.dice, set);               // az értékek azonnal eldőlnek, csak a kijelzés késik
+    renderDice(); renderControls();
+    setTimeout(function(){
+      if (id !== gameId) return;
+      g.shown = true;
+      if (who === "opp"){
+        for (var i = 0; i < DICE_COUNT; i++){
+          if (!g.dice[i].locked){ oppDiceN++; if (g.dice[i].v === 1 || g.dice[i].v === 5) oppScoringN++; }
+        }
+      }
+      phase = (who === "you") ? "select" : "opp";
+      renderDice(); renderStats();
+      if (who === "you" && set === "loaded" && Math.random() < SUSPICION){ endGame("caught"); return; }
+      done();
+    }, (who === "opp") ? ROLL_OPP : ROLL_YOU);
+  }
+
+  // --- a te köröd ---
+  function startTurnYou(){
+    g.turn = "you"; g.pts = 0; g.dice = makeDice(); g.shown = false; g.rollsInTurn = 0;
+    clearSel();
+    phase = "start";
+    el.info.textContent = "Dobj a kockákkal!";
+    setMsg("Te jössz.");
+    render();
+  }
+
+  function afterYouRoll(){
+    var vals = freeValues(g.dice);
+    if (analyze(vals).length === 0){
+      var lost = g.pts, id = gameId;
+      if (lost > 0 && !g.netUsed.you && netWorks(youBadge, oppBadge)){
+        g.netUsed.you = true;                       // Mentőöv: a körpontok nem vesznek el
+        g.you += lost; badgeGain += lost;
+        g.pts = 0;
+        el.info.textContent = "";
+        if (g.you >= target){ render(); endGame("win"); return; }
+        phase = "over-turn";
+        setMsg("Elbuktad, de a 🛟 Mentőöv megmentette a körpontjaidat: +" + lost + " pont a számládra került.", "msg win");
+        render();
+        setTimeout(function(){ if (id === gameId) startTurnOpp(); }, 2000);
+        return;
+      }
+      lostPts += g.pts;
+      g.pts = 0;
+      phase = "over-turn";
+      setMsg(lost > 0 ? "Elbuktad! Nem volt pontot érő kocka, a körben gyűjtött " + lost + " pontod elveszett."
+                      : "Elbuktad! Nem volt pontot érő kocka.", "msg nearmiss");
+      el.info.textContent = "";
+      render();
+      setTimeout(function(){ if (id === gameId) startTurnOpp(); }, 1500);
+      return;
+    }
+    phase = "select";
+    clearSel();
+    updateSel();
+    render();
+  }
+
+  function onRoll(){
+    if (phase !== "start") return;
+    doRoll("you", afterYouRoll);
+  }
+
+  function lockSelected(){
+    var idx = selectedIdx();
+    for (var i = 0; i < idx.length; i++) g.dice[idx[i]].locked = true;
+    var all = true;
+    for (var j = 0; j < DICE_COUNT; j++){ if (!g.dice[j].locked) all = false; }
+    if (all){ for (var k = 0; k < DICE_COUNT; k++) g.dice[k].locked = false; }   // minden kocka pontot ért: újra mind a 6
+    return all;
+  }
+
+  function keepAndRoll(){
+    if (phase !== "select" || curScore <= 0) return;
+    g.pts += curScore;
+    var hot = lockSelected();
+    clearSel();
+    if (hot) setMsg("Mind a hat kocka pontot ért — újra dobhatod mind a hatot!", "msg win");
+    else setMsg("Körpont: " + g.pts + ". Dobsz a maradék kockákkal.");
+    g.shown = false;
+    el.info.textContent = "";
+    doRoll("you", afterYouRoll);
+  }
+
+  function keepAndBank(){
+    if (phase !== "select" || curScore <= 0) return;
+    g.pts += curScore;
+    var bonus = boostBonus(g.pts, youBadge, oppBadge);
+    g.you += g.pts + bonus; badgeGain += bonus;
+    var gained = g.pts;
+    g.pts = 0;
+    clearSel();
+    el.info.textContent = "";
+    if (g.you >= target){ render(); endGame("win"); return; }
+    phase = "over-turn";
+    setMsg("Leadtad a körpontjaidat: +" + gained + (bonus ? " (+" + bonus + " 🍀 Szerencsehozó bónusz)" : "") + ". Az ellenfél jön.");
+    render();
+    var id = gameId;
+    setTimeout(function(){ if (id === gameId) startTurnOpp(); }, 1500);
+  }
+
+  // --- az ellenfél köre ---
+  function startTurnOpp(){
+    var id = gameId;
+    g.turn = "opp"; g.pts = 0; g.dice = makeDice(); g.shown = false; g.rollsInTurn = 0;
+    clearSel();
+    phase = "opp";
+    el.info.textContent = "";
+    setMsg("Az ellenfél dob…");
+    render();
+    setTimeout(function(){ if (id === gameId) oppRoll(); }, 1400);
+  }
+
+  function oppRoll(){
+    var id = gameId;
+    g.rollsInTurn++;
+    doRoll("opp", function(){
+      var vals = freeValues(g.dice);
+      if (analyze(vals).length === 0){
+        var lost = g.pts;
+        if (lost > 0 && !g.netUsed.opp && netWorks(oppBadge, youBadge)){
+          g.netUsed.opp = true;
+          g.opp += lost; g.pts = 0;
+          if (g.opp >= target){ render(); endGame("lose"); return; }
+          phase = "over-turn";
+          setMsg("Az ellenfél elbukta, de a 🛟 Mentőöve megmentette a körpontjait: +" + lost + " pont.", "msg nearmiss");
+          render();
+          setTimeout(function(){ if (id === gameId) startTurnYou(); }, 2200);
+          return;
+        }
+        g.pts = 0;
+        phase = "over-turn";
+        setMsg(lost > 0 ? "Az ellenfél elbukta a körét (−" + lost + " pont)." : "Az ellenfél elbukta a körét.", "msg win");
+        render();
+        setTimeout(function(){ if (id === gameId) startTurnYou(); }, 2200);
+        return;
+      }
+      var d = botDecide(vals, g.pts, g.opp, g.you, target, BOT);
+      if (g.rollsInTurn > 60) d.bank = true;       // biztonsági határ
+      var idx = pickDice(g.dice, d.keep), i;
+      clearSel();
+      for (i = 0; i < idx.length; i++) sel[idx[i]] = true;
+      renderDice();
+      setTimeout(function(){
+        if (id !== gameId) return;
+        g.pts += d.score;
+        for (i = 0; i < idx.length; i++) g.dice[idx[i]].locked = true;
+        var all = true;
+        for (i = 0; i < DICE_COUNT; i++){ if (!g.dice[i].locked) all = false; }
+        if (all){ for (i = 0; i < DICE_COUNT; i++) g.dice[i].locked = false; }
+        clearSel();
+        if (d.bank){
+          var obonus = boostBonus(g.pts, oppBadge, youBadge);
+          g.opp += g.pts + obonus;
+          var gained = g.pts;
+          g.pts = 0;
+          if (g.opp >= target){ render(); endGame("lose"); return; }
+          phase = "over-turn";
+          setMsg("Az ellenfél leadta a pontjait: +" + gained + (obonus ? " (+" + obonus + " 🍀 bónusz)" : "") + ". Te jössz.");
+          render();
+          setTimeout(function(){ if (id === gameId) startTurnYou(); }, 2200);
+        } else {
+          setMsg("Az ellenfél megtartott " + d.score + " pontot (körpont: " + g.pts + "), és tovább dob" + (all ? " mind a hat kockával" : "") + "…");
+          g.shown = false;
+          render();
+          setTimeout(function(){ if (id === gameId) oppRoll(); }, 1500);
+        }
+      }, 1900);
+    });
+  }
+
+  // --- a játszma vége ---
+  function endGame(result){
+    phase = "over";
+    var text, cls = "msg";
+    if (result === "win"){
+      var r = stake * 2;
+      bal += r; won += r;
+      text = "Nyertél! +" + stake + " zseton.";
+      cls = "msg win";
+    } else if (result === "lose"){
+      text = "Az ellenfél nyert: −" + stake + " zseton.";
+    } else {
+      var fine = Math.min(stake, bal);
+      bal -= fine; staked += fine;
+      text = "Lebuktál! Az ellenfél észrevette a cinkelt kockát: elvesztetted a tétet, és még " + fine + " zseton bírságot is fizetsz.";
+      cls = "msg nearmiss";
+    }
+    if (bal < stake) text += bal < 1 ? " Elfogytak a zsetonjaid." : " Nincs elég zsetonod erre a tétre.";
+    el.info.textContent = "";
+    setMsg(text, cls);
+    render();
+  }
+
+  // --- új játszma ---
+  function newGame(){
+    if (phase !== "idle" && phase !== "over") return;
+    if (bal < stake) return;
+    gameId++;
+    if (oppSetting === "random"){ var pool = ["lucky", "net", "counter"]; oppBadge = pool[randInt(3)]; oppRevealed = true; }
+    else { oppBadge = "none"; oppRevealed = true; }
+    bal -= stake; staked += stake; games++;
+    g = { netUsed: { you: false, opp: false }, you: 0, opp: 0, turn: "you", pts: 0, dice: makeDice(), shown: false, rollsInTurn: 0 };
+    if (games % 2 === 1){ startTurnYou(); }        // felváltva kezdtek
+    else { startTurnOpp(); }
+    setMsg(el.msg.textContent + " Az ellenfél jelvénye: " + (oppBadge === "none" ? "nincs" : BADGE_NAME[oppBadge]) + ".", el.msg.className);
+    renderStats();
+  }
+
+  el.newGame.addEventListener("click", newGame);
+  el.roll.addEventListener("click", onRoll);
+  el.keepRoll.addEventListener("click", keepAndRoll);
+  el.keepBank.addEventListener("click", keepAndBank);
+
+  // --- beállítások (tét, cél, kockák) ---
+  function locked(){ return phase !== "idle" && phase !== "over"; }   // játék közben a beállítások zárva vannak
+  function activate(list, btn){
+    Array.prototype.forEach.call(list, function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+  }
+  Array.prototype.forEach.call(stakeBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; stake = parseInt(b.getAttribute("data-stake"), 10); activate(stakeBtns, b); renderControls(); });
+  });
+  Array.prototype.forEach.call(targetBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; target = parseInt(b.getAttribute("data-target"), 10); activate(targetBtns, b); renderBoard(); });
+  });
+  Array.prototype.forEach.call(youBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; youSet = b.getAttribute("data-you"); activate(youBtns, b); });
+  });
+  Array.prototype.forEach.call(oppBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; oppSet = b.getAttribute("data-opp"); activate(oppBtns, b); });
+  });
+
+  Array.prototype.forEach.call(youBadgeBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; youBadge = b.getAttribute("data-ybadge"); activate(youBadgeBtns, b); renderStats(); });
+  });
+  Array.prototype.forEach.call(oppBadgeBtns, function(b){
+    b.addEventListener("click", function(){ if (locked()) return; oppSetting = b.getAttribute("data-obadge"); oppBadge = "none"; oppRevealed = false; activate(oppBadgeBtns, b); renderStats(); });
+  });
+
+  $("dcReset").addEventListener("click", function(){
+    gameId++;                                   // a futó játszma időzítői leállnak
+    bal = START; games = 0; staked = 0; won = 0; lostPts = 0; badgeGain = 0; oppDiceN = 0; oppScoringN = 0;
+    g = null; phase = "idle"; clearSel();
+    el.info.textContent = "";
+    setMsg(START + " zsetonnal indulsz.");
+    render();
+  });
+
+  // ---------------------------------------------------------------
+  //  SZIMULÁCIÓ: 1000 játszma soronként, két egyforma „gép” játszik
+  // ---------------------------------------------------------------
+  function hu(n, dec){ return n.toFixed(dec).replace("-", "−").replace(".", ","); }
+
+  $("dcSim").addEventListener("click", function(){
+    var out = $("dcSimOut");
+    out.textContent = "Számolok…";
+    setTimeout(function(){
+      var N = 2000, TARGET = 2000;
+      var scenarios = [
+        { name: "Mindkét fél kockája tisztességes, jelvény nélkül", you: "fair",   opp: "fair",   susp: 0 },
+        { name: "A te kockád tisztességes, a házé cinkelt",         you: "fair",   opp: "loaded", susp: 0 },
+        { name: "A te kockád cinkelt, soha nem buksz le",           you: "loaded", opp: "fair",   susp: 0 },
+        { name: "A te kockád cinkelt, dobásonként 8% a lebukás",    you: "loaded", opp: "fair",   susp: SUSPICION },
+        { name: "Neked 🍀 Szerencsehozó jelvényed van",             you: "fair",   opp: "fair",   susp: 0, yb: "lucky" },
+        { name: "Neked 🛟 Mentőöved van",                           you: "fair",   opp: "fair",   susp: 0, yb: "net" },
+        { name: "Neked 🍀 van, az ellenfélnek 🚫 Hatástalanítója",   you: "fair",   opp: "fair",   susp: 0, yb: "lucky", ob: "counter" }
+      ];
+      var html = "";
+      scenarios.forEach(function(sc){
+        var w = 0, c = 0;
+        for (var i = 0; i < N; i++){
+          var r = playBotGame({ target: TARGET, youSet: sc.you, oppSet: sc.opp, youFirst: i % 2 === 0, youBot: BOT, oppBot: BOT, suspicion: sc.susp, youBadge: sc.yb, oppBadge: sc.ob });
+          if (r === "you") w++; else if (r === "caught") c++;
+        }
+        var l = N - w - c;
+        var ev = (w - l - 2 * c) / N;              // átlagos eredmény játszmánként, a tét többszöröseként (lebukás = tét + bírság)
+        html += sc.name + ":<br>&nbsp;&nbsp;nyert " + Math.round(w / N * 100) + "%" +
+                (c ? ", lebukott " + Math.round(c / N * 100) + "%" : "") +
+                " · átlag " + (ev > 0 ? "+" : "") + hu(ev, 2) + " tét / játszma<br>";
+      });
+      html += "<br>Tisztességes kockákkal mindenki esélye kb. 50%. A cinkelt kocka óriási előnyt ad annak, aki használja — de ha te csalsz, a lebukás ára (a tét és a bírság) elviszi a nyereséget. A jelvények kisebb, de érezhető előnyt adnak (néhány százalék), a Hatástalanító pedig kioltja az ellenfél jelvényét. A házat viszont senki nem bünteti, ha cinkelt kockával játszik.";
+      out.innerHTML = html;
+    }, 30);
+  });
+
+  setMsg(START + " zsetonnal indulsz.");
+  render();
+})();
